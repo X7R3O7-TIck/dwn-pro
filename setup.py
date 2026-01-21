@@ -1,0 +1,41 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="social-media-downloader",
+    version="1.0.0",
+    description="Multi-platform video downloader for YouTube, Facebook, and Instagram",
+    author="Social Media Downloader Team",
+    author_email="dev@example.com",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    python_requires=">=3.8",
+    install_requires=[
+        "yt-dlp>=2024.1.1",
+        "requests>=2.31.0",
+        "python-dotenv>=1.0.0",
+        "validators>=0.22.0",
+        "fastapi>=0.109.0",
+        "uvicorn>=0.27.0",
+        "python-multipart>=0.0.6",
+        "click>=8.1.7",
+        "colorama>=0.4.6",
+        "tqdm>=4.66.1",
+        "pydantic>=2.5.0",
+        "pydantic-settings>=2.1.0",
+        "ffmpeg-python>=0.2.0",
+        "python-dateutil>=2.8.2",
+    ],
+    extras_require={
+        "dev": [
+            "pytest>=7.4.0",
+            "pytest-asyncio>=0.23.0",
+            "httpx>=0.26.0",
+        ]
+    },
+    entry_points={
+        "console_scripts": [
+            "smd=cli.main:main",
+        ],
+    },
+    include_package_data=True,
+)

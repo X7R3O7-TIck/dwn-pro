@@ -1,0 +1,38 @@
+{
+  "test_results": {
+    "video_download": {
+      "status": "completed",
+      "content_id": "youtube_1768981871_8385",
+      "file_name": "youtube_1768981871_8385.webm",
+      "file_size_mb": 32.24,
+      "global_url": "http://0.0.0.0:8000/files/youtube_1768981871_8385.webm"
+    },
+    "audio_download": {
+      "status": "completed",
+      "content_id": "youtube_1768981902_9361",
+      "file_name": "youtube_1768981902_9361.mp3",
+      "file_size_mb": 5.77,
+      "global_url": "http://0.0.0.0:8000/files/youtube_1768981902_9361.mp3"
+    },
+    "files_listed": 10,
+    "history_items": 2
+  },
+  "supported_platforms": [
+    "youtube",
+    "facebook",
+    "instagram"
+  ],
+  "audio_support": {
+    "youtube": true,
+    "facebook": false,
+    "instagram": false
+  },
+  "features": [
+    "Unique Content ID based filenames",
+    "Full response with all file info",
+    "Global file access via URL",
+    "Download progress tracking",
+    "Download history with file info",
+    "MP3/Audio extraction for YouTube"
+  ]
+}

@@ -1,0 +1,416 @@
+{
+  "report_generated": "2026-01-21T13:25:19.548983",
+  "project": "Social Media Downloader",
+  "version": "1.0.0",
+  "server_mode": true,
+  "test_results": {
+    "video_info": {
+      "content_id": "content_youtube_1768980283_4866",
+      "user_link": "https://www.youtube.com/watch?v=l482T0yNkeo",
+      "platform": "youtube",
+      "title": "AC/DC - Highway to Hell (Official Video)",
+      "description": "Official Music Video for \"Highway to Hell\" by AC/DC\nListen to AC/DC: https://ACDC.lnk.to/listen_YD\n\nWin 2 tickets to see AC/DC during the U.S. leg of the #PowerUpTour! Flights + hotel included. \n\u26a1\ufe0f\u00a0https://acdc.lnk.to/PWRUPUSTicketGiveawayID\n\nSubscribe to the official AC/DC YouTube channel: https://ACDC.lnk.to/subscribeYD\n\nWatch more AC/DC videos: https://ACDC.lnk.to/listen_YC/youtube\n\nFollow AC/DC:\nFacebook: https://ACDC.lnk.to/followFI\nInstagram: https://ACDC.lnk.to/followII\nTwitter: https://ACDC.lnk.to/followTI\nWebsite: https://ACDC.lnk.to/followWI\nSpotify: https://ACDC.lnk.to/followSI\nYouTube: https://ACDC.lnk.to/subscribeYD\n\nLyrics:\nI'm on the highway to hell\nOn the highway to hell\nHighway to hell\nI'm on the highway to hell\n\n#ACDC #HighwaytoHell #OfficialMusicVideo #Rock",
+      "thumbnail": "https://i.ytimg.com/vi/l482T0yNkeo/maxresdefault.jpg",
+      "duration_seconds": 207,
+      "duration_formatted": "3:27",
+      "uploader": "AC/DC",
+      "upload_date": "20121111",
+      "view_count": 437680797,
+      "available_qualities": [
+        "best",
+        "worst",
+        "4k",
+        "1080p",
+        "720p",
+        "480p",
+        "360p",
+        "audio",
+        "audio_mp3",
+        "audio_m4a"
+      ],
+      "available_formats": [
+        {
+          "format_id": "sb3",
+          "ext": "mhtml",
+          "resolution": "48x27",
+          "format_note": "storyboard",
+          "filesize": null
+        },
+        {
+          "format_id": "sb2",
+          "ext": "mhtml",
+          "resolution": "60x45",
+          "format_note": "storyboard",
+          "filesize": null
+        },
+        {
+          "format_id": "sb1",
+          "ext": "mhtml",
+          "resolution": "120x90",
+          "format_note": "storyboard",
+          "filesize": null
+        },
+        {
+          "format_id": "sb0",
+          "ext": "mhtml",
+          "resolution": "240x180",
+          "format_note": "storyboard",
+          "filesize": null
+        },
+        {
+          "format_id": "139",
+          "ext": "m4a",
+          "resolution": "audio only",
+          "format_note": "low",
+          "filesize": 1264373
+        }
+      ],
+      "is_live": false,
+      "timestamp": "2026-01-21T13:24:43.926386",
+      "file_path": null,
+      "download_status": "pending"
+    },
+    "download": {
+      "content_id": "dl_youtube_1768980287",
+      "user_link": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+      "task_id": "a5d1bc1a",
+      "download_status": "completed",
+      "platform": "youtube",
+      "title": "PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M/V",
+      "file_path": "downloads/PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M\u29f8V.webm",
+      "file_size_bytes": 13902064,
+      "file_size_mb": 13.26,
+      "file_format": "mp4",
+      "duration_seconds": 252,
+      "uploader": "officialpsy",
+      "thumbnail": "https://i.ytimg.com/vi_webp/9bZkp7q19f0/maxresdefault.webp",
+      "view_count": 5823918333,
+      "error": null,
+      "message": "Download completed successfully",
+      "timestamp": "2026-01-21T13:25:05.622384",
+      "download_url": "file://downloads/PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M\u29f8V.webm"
+    },
+    "api_endpoints": {
+      "health": {
+        "status": "healthy",
+        "version": "1.0.0",
+        "supported_platforms": [
+          "youtube",
+          "facebook",
+          "instagram"
+        ],
+        "timestamp": "2026-01-21T13:25:07.942283"
+      },
+      "platforms": {
+        "platforms": [
+          "youtube",
+          "facebook",
+          "instagram"
+        ],
+        "quality_options": [
+          {
+            "name": "best",
+            "description": "Best available quality (video + audio)",
+            "max_height": null,
+            "is_audio_only": false
+          },
+          {
+            "name": "worst",
+            "description": "Worst available quality",
+            "max_height": null,
+            "is_audio_only": false
+          },
+          {
+            "name": "4k",
+            "description": "Maximum 4K (2160p)",
+            "max_height": 2160,
+            "is_audio_only": false
+          },
+          {
+            "name": "1080p",
+            "description": "Full HD (1080p)",
+            "max_height": 1080,
+            "is_audio_only": false
+          },
+          {
+            "name": "720p",
+            "description": "HD (720p)",
+            "max_height": 720,
+            "is_audio_only": false
+          },
+          {
+            "name": "480p",
+            "description": "SD (480p)",
+            "max_height": 480,
+            "is_audio_only": false
+          },
+          {
+            "name": "360p",
+            "description": "Low quality (360p)",
+            "max_height": 360,
+            "is_audio_only": false
+          },
+          {
+            "name": "audio",
+            "description": "Best audio quality only",
+            "max_height": null,
+            "is_audio_only": true
+          },
+          {
+            "name": "audio_mp3",
+            "description": "Extract audio as MP3",
+            "max_height": null,
+            "is_audio_only": true
+          },
+          {
+            "name": "audio_m4a",
+            "description": "Extract audio as M4A",
+            "max_height": null,
+            "is_audio_only": true
+          }
+        ]
+      },
+      "qualities": [
+        {
+          "name": "best",
+          "description": "Best available quality (video + audio)",
+          "max_height": null,
+          "is_audio_only": false
+        },
+        {
+          "name": "worst",
+          "description": "Worst available quality",
+          "max_height": null,
+          "is_audio_only": false
+        },
+        {
+          "name": "4k",
+          "description": "Maximum 4K (2160p)",
+          "max_height": 2160,
+          "is_audio_only": false
+        },
+        {
+          "name": "1080p",
+          "description": "Full HD (1080p)",
+          "max_height": 1080,
+          "is_audio_only": false
+        },
+        {
+          "name": "720p",
+          "description": "HD (720p)",
+          "max_height": 720,
+          "is_audio_only": false
+        },
+        {
+          "name": "480p",
+          "description": "SD (480p)",
+          "max_height": 480,
+          "is_audio_only": false
+        },
+        {
+          "name": "360p",
+          "description": "Low quality (360p)",
+          "max_height": 360,
+          "is_audio_only": false
+        },
+        {
+          "name": "audio",
+          "description": "Best audio quality only",
+          "max_height": null,
+          "is_audio_only": true
+        },
+        {
+          "name": "audio_mp3",
+          "description": "Extract audio as MP3",
+          "max_height": null,
+          "is_audio_only": true
+        },
+        {
+          "name": "audio_m4a",
+          "description": "Extract audio as M4A",
+          "max_height": null,
+          "is_audio_only": true
+        }
+      ],
+      "video_info": {
+        "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+        "platform": "youtube",
+        "title": "PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M/V",
+        "description": "PSY - \u2018I LUV IT\u2019 M/V @ https://youtu.be/Xvjnoagk6GU\nPSY - \u2018New Face\u2019 M/V @https://youtu.be/OwJPPaEyqhI\n\nPSY - 8TH ALBUM '4X2=8' on iTunes @\nhttps://smarturl.it/PSY_8thAlbum\n\nPSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) on iTunes @ http://smarturl.it/PsyGangnam\n\n#PSY #\uc2f8\uc774 #GANGNAMSTYLE #\uac15\ub0a8\uc2a4\ud0c0\uc77c\n\nMore about PSY@\nhttp://www.youtube.com/officialpsy\nhttp://www.facebook.com/officialpsy\nhttp://twitter.com/psy_oppa\nhttps://www.instagram.com/42psy42\nhttp://iTunes.com/PSY\nhttp://sptfy.com/PSY\nhttp://weibo.com/psyoppa",
+        "thumbnail": "https://i.ytimg.com/vi_webp/9bZkp7q19f0/maxresdefault.webp",
+        "duration": 252,
+        "uploader": "officialpsy",
+        "upload_date": "20120715",
+        "view_count": 5823918333,
+        "available_qualities": [
+          "best",
+          "worst",
+          "4k",
+          "1080p",
+          "720p",
+          "480p",
+          "360p",
+          "audio",
+          "audio_mp3",
+          "audio_m4a"
+        ],
+        "available_formats": [
+          {
+            "format_id": "sb3",
+            "ext": "mhtml",
+            "resolution": "48x27",
+            "format_note": "storyboard",
+            "filesize": null
+          },
+          {
+            "format_id": "sb2",
+            "ext": "mhtml",
+            "resolution": "80x45",
+            "format_note": "storyboard",
+            "filesize": null
+          },
+          {
+            "format_id": "sb1",
+            "ext": "mhtml",
+            "resolution": "160x90",
+            "format_note": "storyboard",
+            "filesize": null
+          },
+          {
+            "format_id": "sb0",
+            "ext": "mhtml",
+            "resolution": "320x180",
+            "format_note": "storyboard",
+            "filesize": null
+          },
+          {
+            "format_id": "139",
+            "ext": "m4a",
+            "resolution": "audio only",
+            "format_note": "low",
+            "filesize": 1539911
+          },
+          {
+            "format_id": "249",
+            "ext": "webm",
+            "resolution": "audio only",
+            "format_note": "low",
+            "filesize": 1566442
+          },
+          {
+            "format_id": "140",
+            "ext": "m4a",
+            "resolution": "audio only",
+            "format_note": "medium",
+            "filesize": 4083640
+          },
+          {
+            "format_id": "251",
+            "ext": "webm",
+            "resolution": "audio only",
+            "format_note": "medium",
+            "filesize": 3990497
+          },
+          {
+            "format_id": "91",
+            "ext": "mp4",
+            "resolution": "256x144",
+            "format_note": null,
+            "filesize": null
+          },
+          {
+            "format_id": "160",
+            "ext": "mp4",
+            "resolution": "256x144",
+            "format_note": "144p",
+            "filesize": 2788518
+          },
+          {
+            "format_id": "278",
+            "ext": "webm",
+            "resolution": "256x144",
+            "format_note": "144p",
+            "filesize": 2858754
+          },
+          {
+            "format_id": "394",
+            "ext": "mp4",
+            "resolution": "256x144",
+            "format_note": "144p",
+            "filesize": 2188464
+          },
+          {
+            "format_id": "92",
+            "ext": "mp4",
+            "resolution": "426x240",
+            "format_note": null,
+            "filesize": null
+          },
+          {
+            "format_id": "133",
+            "ext": "mp4",
+            "resolution": "426x240",
+            "format_note": "240p",
+            "filesize": 5628121
+          },
+          {
+            "format_id": "242",
+            "ext": "webm",
+            "resolution": "426x240",
+            "format_note": "240p",
+            "filesize": 6358750
+          }
+        ],
+        "is_live": false,
+        "error": null,
+        "content_id": "api_1768980308_215",
+        "user_link": "https://www.youtube.com/watch?v=9bZkp7q19f0"
+      },
+      "download": {
+        "task_id": "c49a3e5e",
+        "status": "completed",
+        "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+        "platform": "youtube",
+        "title": "PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M/V",
+        "progress_percent": 100.0,
+        "file_path": "downloads/PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M\u29f8V.webm",
+        "file_size": 13902064,
+        "message": "Download completed successfully",
+        "error": null,
+        "timestamp": "2026-01-21T13:25:19.518147",
+        "content_id": "dl_1768980319",
+        "user_link": "https://www.youtube.com/watch?v=9bZkp7q19f0"
+      },
+      "progress": {
+        "task_id": "c49a3e5e",
+        "status": "completed",
+        "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+        "platform": "youtube",
+        "title": "PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M/V",
+        "progress_percent": 100.0,
+        "file_path": "downloads/PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M\u29f8V.webm",
+        "file_size": 13902064,
+        "message": "Download completed successfully",
+        "error": null,
+        "timestamp": "2026-01-21T13:25:19.518090",
+        "content_id": "prog_1768980319"
+      },
+      "history": {
+        "items": [
+          {
+            "task_id": "c49a3e5e",
+            "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+            "platform": "youtube",
+            "title": "PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M/V",
+            "file_path": "downloads/PSY - GANGNAM STYLE(\uac15\ub0a8\uc2a4\ud0c0\uc77c) M\u29f8V.webm",
+            "file_size": 13902064,
+            "success": true,
+            "timestamp": "2026-01-21T13:25:19.518147",
+            "error": null
+          }
+        ],
+        "total_count": 1
+      }
+    }
+  }
+}

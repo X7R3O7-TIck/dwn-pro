@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d9ff;
+        }
+
+        .status-item .label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 5px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #00d9ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 .icon {
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-group input[type="text"] {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #00d9ff;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .input-group input[type="text"]::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .input-group select {
+            padding: 15px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .input-group select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,217,255,0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-download {
+            background: linear-gradient(90deg, #00ff88, #00d9ff);
+            color: #1a1a2e;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+
+        .btn-delete {
+            background: #ff4757;
+            color: #fff;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-box.success {
+            background: rgba(0,255,136,0.1);
+            border-color: #00ff88;
+        }
+
+        .result-box.error {
+            background: rgba(255,71,87,0.1);
+            border-color: #ff4757;
+        }
+
+        .result-box h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-box.success h3 { color: #00ff88; }
+        .result-box.error h3 { color: #ff4757; }
+
+        .result-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .result-info .item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .result-info .item .label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 5px;
+        }
+
+        .result-info .item .value {
+            font-size: 0.95rem;
+            word-break: break-all;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .file-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .file-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-card .name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
+
+        .file-card .meta {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 15px;
+        }
+
+        .file-card .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .file-icon.video { color: #00d9ff; }
+        .file-icon.audio { color: #00ff88; }
+        .file-icon.unknown { color: #ff4757; }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-item .info {
+            flex: 1;
+        }
+
+        .history-item .title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .history-item .meta {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .history-item .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-badge.success {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+
+        .status-badge.failed {
+            background: rgba(255,71,87,0.2);
+            color: #ff4757;
+        }
+
+        .status-badge.pending {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab.active {
+            background: rgba(0,217,255,0.2);
+            border-color: #00d9ff;
+            color: #00d9ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .video-info {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0,217,255,0.1);
+            border: 1px solid #00d9ff;
+            border-radius: 10px;
+        }
+
+        .video-info.show {
+            display: block;
+        }
+
+        .video-info .thumbnail {
+            width: 200px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .video-info .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .video-info .detail-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .video-info .detail-item .label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 3px;
+        }
+
+        .video-info .detail-item .value {
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #00d9ff;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .input-group input[type="text"] {
+                min-width: 100%;
+            }
+
+            .status-bar {
+                gap: 15px;
+            }
+
+            .status-item {
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📥 Social Media Downloader</h1>
+            <p>Download videos from YouTube, Facebook, and Instagram</p>
+        </header>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="value" id="total-files">0</div>
+                <div class="label">Downloaded Files</div>
+            </div>
+            <div class="status-item">
+                <div class="value" id="total-downloads">0</div>
+                <div class="label">Total Downloads</div>
+            </div>
+            <div class="status-item">
+                <div class="value" id="server-status">●</div>
+                <div class="label">Server Status</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">⬇️</span> Download Video</h2>
+            
+            <div class="input-group">
+                <input type="text" id="video-url" placeholder="Paste video URL here...">
+                <select id="quality">
+                    <option value="best">Best Quality</option>
+                    <option value="4k">4K (2160p)</option>
+                    <option value="1080p">1080p Full HD</option>
+                    <option value="720p">720p HD</option>
+                    <option value="480p">480p SD</option>
+                    <option value="360p">360p Low</option>
+                    <option value="audio">Audio Only</option>
+                </select>
+                <select id="format">
+                    <option value="mp4">MP4</option>
+                    <option value="webm">WebM</option>
+                    <option value="m4a">M4A (Audio)</option>
+                </select>
+                <button class="btn btn-primary" onclick="downloadVideo()">
+                    <span id="download-btn-text">Download</span>
+                </button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="getVideoInfo()" style="margin-bottom: 15px;">
+                ℹ️ Get Video Info
+            </button>
+
+            <div class="video-info" id="video-info">
+                <img class="thumbnail" id="info-thumbnail" src="" alt="Thumbnail">
+                <h3 id="info-title"></h3>
+                <div class="details">
+                    <div class="detail-item">
+                        <div class="label">Platform</div>
+                        <div class="value" id="info-platform"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Duration</div>
+                        <div class="value" id="info-duration"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Views</div>
+                        <div class="value" id="info-views"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Uploader</div>
+                        <div class="value" id="info-uploader"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="progress-percent">0%</span>
+                    <span id="progress-speed"></span>
+                    <span id="progress-size"></span>
+                </div>
+            </div>
+
+            <div class="result-box" id="result-box">
+                <h3 id="result-title"></h3>
+                <div class="result-info" id="result-info"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📁</span> Your Downloads</h2>
+            <div class="files-grid" id="files-grid">
+                <div class="empty-state">
+                    <div class="icon">📭</div>
+                    <p>No downloads yet</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📜</span> Download History</h2>
+            <div class="history-list" id="history-list">
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <p>No download history</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Social Media Downloader - Built with FastAPI</p>
+        <p>API Docs: <a href="/docs" style="color: #00d9ff;">/docs</a> | 
+           Health: <a href="/api/health" style="color: #00d9ff;">/api/health</a></p>
+    </footer>
+
+    <script>
+        const API_BASE = '';
+        let currentTaskId = null;
+        let progressInterval = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFiles();
+            loadHistory();
+            checkServerStatus();
+            setInterval(checkServerStatus, 30000);
+        });
+
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                if (response.ok) {
+                    document.getElementById('server-status').textContent = '●';
+                    document.getElementById('server-status').style.color = '#00ff88';
+                } else {
+                    document.getElementById('server-status').textContent = '●';
+                    document.getElementById('server-status').style.color = '#ff4757';
+                }
+            } catch (error) {
+                document.getElementById('server-status').textContent = '●';
+                document.getElementById('server-status').style.color = '#ff4757';
+            }
+        }
+
+        // Get video info
+        async function getVideoInfo() {
+            const url = document.getElementById('video-url').value.trim();
+            if (!url) {
+                alert('Please enter a video URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/info?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    showError('Failed to get video info: ' + data.error);
+                    return;
+                }
+
+                document.getElementById('video-info').classList.add('show');
+                document.getElementById('info-thumbnail').src = data.thumbnail || '';
+                document.getElementById('info-title').textContent = data.title || 'Unknown';
+                document.getElementById('info-platform').textContent = data.platform || 'Unknown';
+                document.getElementById('info-duration').textContent = data.duration_formatted || 'N/A';
+                document.getElementById('info-views').textContent = data.view_count ? data.view_count.toLocaleString() : 'N/A';
+                document.getElementById('info-uploader').textContent = data.uploader || 'N/A';
+
+            } catch (error) {
+                showError('Failed to get video info: ' + error.message);
+            }
+        }
+
+        // Download video
+        async function downloadVideo() {
+            const url = document.getElementById('video-url').value.trim();
+            const quality = document.getElementById('quality').value;
+            const format = document.getElementById('format').value;
+
+            if (!url) {
+                alert('Please enter a video URL');
+                return;
+            }
+
+            const btn = document.querySelector('.btn-primary');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Downloading...';
+
+            // Reset progress
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-percent').textContent = '0%';
+            document.getElementById('progress-speed').textContent = '';
+            document.getElementById('progress-size').textContent = '';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('url', url);
+                formData.append('quality', quality);
+                formData.append('format', format);
+
+                const response = await fetch(`${API_BASE}/api/download`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError('Download failed: ' + data.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Download</span>';
+                    return;
+                }
+
+                currentTaskId = data.task_id;
+                showDownloadResult(data);
+                loadFiles();
+                loadHistory();
+                startProgressTracking(data.task_id);
+
+                btn.disabled = false;
+                btn.innerHTML = '<span>Download</span>';
+
+            } catch (error) {
+                showError('Download failed: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span>Download</span>';
+            }
+        }
+
+        // Track download progress
+        async function startProgressTracking(taskId) {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+
+            progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/api/download/progress/${taskId}`);
+                    const data = await response.json();
+
+                    document.getElementById('progress-fill').style.width = data.progress_percent + '%';
+                    document.getElementById('progress-percent').textContent = data.progress_percent.toFixed(1) + '%';
+                    
+                    if (data.speed) {
+                        document.getElementById('progress-speed').textContent = data.speed;
+                    }
+                    if (data.file_size) {
+                        document.getElementById('progress-size').textContent = (data.file_size / 1024 / 1024).toFixed(2) + ' MB';
+                    }
+
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(progressInterval);
+                        loadFiles();
+                        loadHistory();
+                    }
+                } catch (error) {
+                    console.error('Progress check failed:', error);
+                }
+            }, 1000);
+        }
+
+        // Show download result
+        function showDownloadResult(data) {
+            const resultBox = document.getElementById('result-box');
+            resultBox.className = 'result-box ' + (data.download_status === 'completed' ? 'success' : 'error');
+            resultBox.style.display = 'block';
+
+            document.getElementById('result-title').innerHTML = 
+                data.download_status === 'completed' ? '✓ Download Complete!' : '✗ Download Failed';
+
+            document.getElementById('result-info').innerHTML = `
+                <div class="item">
+                    <div class="label">Content ID</div>
+                    <div class="value">${data.content_id}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Platform</div>
+                    <div class="value">${data.platform}</div>
+                </div>
+                <div class="item">
+                    <div class="label">File Name</div>
+                    <div class="value">${data.file_name || 'N/A'}</div>
+                </div>
+                <div class="item">
+                    <div class="label">File Size</div>
+                    <div class="value">${data.file_size_mb ? data.file_size_mb + ' MB' : 'N/A'}</div>
+                </div>
+                <div class="item">
+                    <div class="label">Download URL</div>
+                    <div class="value">
+                        ${data.global_url ? `<a href="${data.global_url}" target="_blank" style="color: #00d9ff;">${data.file_name}</a>` : 'N/A'}
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="label">Status</div>
+                    <div class="value"><span class="status-badge ${data.download_status}">${data.download_status}</span></div>
+                </div>
+            `;
+        }
+
+        // Show error
+        function showError(message) {
+            const resultBox = document.getElementById('result-box');
+            resultBox.className = 'result-box error';
+            resultBox.style.display = 'block';
+            document.getElementById('result-title').textContent = '✗ Error';
+            document.getElementById('result-info').innerHTML = `
+                <div class="item" style="grid-column: 1 / -1;">
+                    <div class="value" style="color: #ff4757;">${message}</div>
+                </div>
+            `;
+        }
+
+        // Load files
+        async function loadFiles() {
+            try {
+                const response = await fetch(`${API_BASE}/api/files`);
+                const data = await response.json();
+
+                document.getElementById('total-files').textContent = data.total;
+
+                const grid = document.getElementById('files-grid');
+                
+                if (data.files && data.files.length > 0) {
+                    grid.innerHTML = data.files.map(file => `
+                        <div class="file-card">
+                            <div class="file-icon ${getFileIconClass(file.name)}">${getFileIcon(file.name)}</div>
+                            <div class="name">${file.name}</div>
+                            <div class="meta">
+                                ${file.size_mb} MB<br>
+                                Content ID: ${file.content_id}
+                            </div>
+                            <div class="actions">
+                                <a href="${file.download_url}" class="btn btn-download" target="_blank">⬇️ Download</a>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <p>No downloads yet</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load files:', error);
+            }
+        }
+
+        // Load history
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/api/history`);
+                const data = await response.json();
+
+                document.getElementById('total-downloads').textContent = data.total_count;
+
+                const list = document.getElementById('history-list');
+
+                if (data.items && data.items.length > 0) {
+                    list.innerHTML = data.items.map(item => `
+                        <div class="history-item">
+                            <div class="info">
+                                <div class="title">${item.title || 'Unknown'}</div>
+                                <div class="meta">
+                                    ${item.platform} • ${item.file_name || 'N/A'} • 
+                                    ${item.file_size_mb ? item.file_size_mb + ' MB' : 'N/A'}
+                                </div>
+                            </div>
+                            <span class="status-badge ${item.success ? 'success' : 'failed'}">
+                                ${item.success ? '✓' : '✗'}
+                            </span>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📋</div>
+                            <p>No download history</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load history:', error);
+            }
+        }
+
+        // Helper functions
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['mp4', 'webm', 'mkv', 'avi'].includes(ext)) return '🎬';
+            if (['mp3', 'm4a', 'wav', 'aac', 'flac'].includes(ext)) return '🎵';
+            return '📄';
+        }
+
+        function getFileIconClass(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['mp4', 'webm', 'mkv', 'avi'].includes(ext)) return 'video';
+            if (['mp3', 'm4a', 'wav', 'aac', 'flac'].includes(ext)) return 'audio';
+            return 'unknown';
+        }
+    </script>
+</body>
+</html>
