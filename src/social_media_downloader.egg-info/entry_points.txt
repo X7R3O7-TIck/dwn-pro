@@ -1,2 +1,3 @@
 [console_scripts]
 smd = cli.main:main
+smd-server = app:main

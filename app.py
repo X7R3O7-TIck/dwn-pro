@@ -8,6 +8,7 @@ Features:
 - Global file serving via URL
 - Beautiful Web UI for downloads
 - Auto-install dependencies on first run
+- Installed via pyproject.toml
 """
 
 import sys
@@ -16,10 +17,14 @@ import json
 import time
 import uuid
 import subprocess
+import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-import threading
+
+# Suppress pip warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+os.environ["PIP_DISABLE_PIP_VERSION_CHECK"] = "1"
 
 # Add project to path
 PROJECT_ROOT = Path(__file__).parent
@@ -27,123 +32,126 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 
 # ============================================================================
-# DEPENDENCY CHECK & INSTALL
+# DEPENDENCY CHECK (for non-pip installation)
 # ============================================================================
 
-REQUIRED_PACKAGES = [
-    ("fastapi", "fastapi"),
-    ("uvicorn", "uvicorn"),
-    ("jinja2", "jinja2"),
-    ("python-multipart", "python-multipart"),
-    ("yt-dlp", "yt-dlp"),
-    ("requests", "requests"),
-    ("pydantic", "pydantic"),
-    ("httpx", "httpx"),
-]
+REQUIRED_PACKAGES = {
+    "fastapi": "fastapi",
+    "uvicorn": "uvicorn", 
+    "jinja2": "jinja2",
+    "python-multipart": "python_multipart",
+    "yt-dlp": "yt_dlp",
+    "requests": "requests",
+    "pydantic": "pydantic",
+    "httpx": "httpx",
+}
 
 
 def check_and_install_dependencies():
-    """Check and install required dependencies"""
+    """Check and install required dependencies (fallback for non-pip install)"""
     print("=" * 70)
     print("SOCIAL MEDIA DOWNLOADER - DEPENDENCY CHECK")
     print("=" * 70)
-
+    
     missing_packages = []
     installed_packages = []
-
-    for package_name, import_name in REQUIRED_PACKAGES:
+    
+    for package_name, import_name in REQUIRED_PACKAGES.items():
         try:
             __import__(import_name)
             version = getattr(sys.modules[import_name], "__version__", "unknown")
-            installed_packages.append(f"  ✓ {package_name} ({version})")
+            installed_packages.append(f"  [OK] {package_name} ({version})")
         except ImportError:
             missing_packages.append(package_name)
-            print(f"  ✗ {package_name} - NOT FOUND")
-
+            print(f"  [MISSING] {package_name}")
+    
     if installed_packages:
         print("\nInstalled Packages:")
         for pkg in installed_packages:
             print(pkg)
-
+    
     if missing_packages:
         print(f"\nMissing Packages: {', '.join(missing_packages)}")
-        print("\nInstalling missing packages...")
-
+        print("Installing missing packages...")
+        
         try:
-            subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "--upgrade", "pip"]
-            )
-
             for package in missing_packages:
                 print(f"  Installing {package}...")
-                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-            print("\n✓ All dependencies installed successfully!")
-
-        except subprocess.CalledProcessError as e:
-            print(f"\n✗ Failed to install dependencies: {e}")
-            print("Please install manually: pip install -r requirements.txt")
+                result = subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "--quiet", package],
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode != 0:
+                    print(f"  Failed to install {package}: {result.stderr}")
+                    return False
+                
+            print("\n[OK] All dependencies installed successfully!")
+            
+        except subprocess.SubprocessError as e:
+            print(f"\n[ERROR] Failed to install dependencies: {e}")
+            print("Please install via pip: pip install -e .")
             return False
-
-    print("\n✓ All dependencies are satisfied!")
+    
+    print("\n[OK] All dependencies are satisfied!")
     return True
 
 
 def check_ffmpeg():
     """Check if FFmpeg is installed"""
     try:
-        result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
+        result = subprocess.run(
+            ["ffmpeg", "-version"], 
+            capture_output=True, 
+            text=True
+        )
         if result.returncode == 0:
             version = result.stdout.split("\n")[0]
-            print(f"  ✓ FFmpeg: {version.split()[2]}")
+            print(f"  [OK] FFmpeg: {version.split()[2]}")
             return True
     except (FileNotFoundError, subprocess.SubprocessError):
         pass
-
-    print("  ⚠ FFmpeg - NOT FOUND (audio extraction may not work)")
-    print("    Install with: apt install ffmpeg  (Ubuntu/Debian)")
+    
+    print("  [WARNING] FFmpeg not found (audio extraction may not work)")
+    print("    Install: sudo apt install ffmpeg  (Ubuntu/Debian)")
     print("    Or: brew install ffmpeg  (macOS)")
     return False
 
 
-# Run dependency check before importing other modules
-if not check_and_install_dependencies():
-    sys.exit(1)
+# Run dependency check (only if not installed via pip)
+if not os.path.exists(PROJECT_ROOT / "pyproject.toml"):
+    if not check_and_install_dependencies():
+        sys.exit(1)
+    
+    check_ffmpeg()
+    
+    print("\n" + "=" * 70)
+    print("Starting Social Media Downloader...")
+    print("=" * 70 + "\n")
 
-check_ffmpeg()
-
-print("\n" + "=" * 70)
-print("Starting Social Media Downloader...")
-print("=" * 70 + "\n")
-
-from fastapi import FastAPI, HTTPException, Request, Form, UploadFile, File
+# Now import after dependency check
+from fastapi import FastAPI, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi import Query
 import uvicorn
 
 from src.core.downloader import SocialMediaDownloader
-from src.core.url_detector import detect_platform, Platform
-from src.core.progress_tracker import ProgressTracker, DownloadStatus
-from src.api.models import DownloadRequest, VideoInfoResponse, HealthResponse
+from src.core.url_detector import detect_platform
 
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
-
 class Config:
     """Server configuration"""
-
     HOST = "0.0.0.0"
     PORT = 8000
     DEBUG = False
     DOWNLOADS_DIR = PROJECT_ROOT / "downloads"
     MAX_CONCURRENT_DOWNLOADS = 3
-    TITLE_MAX_LENGTH = 100
     SUPPORTED_PLATFORMS = ["youtube", "facebook", "instagram"]
 
 
@@ -151,7 +159,6 @@ class Config:
 # APP INITIALIZATION
 # ============================================================================
 
-# Create FastAPI app
 app = FastAPI(
     title="Social Media Downloader",
     description="Download videos from YouTube, Facebook, Instagram with unique IDs",
@@ -160,7 +167,6 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -181,13 +187,11 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Initialize downloader
 downloader = SocialMediaDownloader(output_dir=str(Config.DOWNLOADS_DIR))
-progress_tracker = ProgressTracker()
 
 
 # ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
-
 
 def generate_content_id(platform: str = "content") -> str:
     """Generate unique content ID"""
@@ -196,11 +200,11 @@ def generate_content_id(platform: str = "content") -> str:
     return f"{platform}_{timestamp}_{unique_hash}"
 
 
-def get_file_info(file_path: Path) -> Dict[str, Any]:
+def get_file_info(file_path: Path) -> Optional[Dict[str, Any]]:
     """Get file information"""
     if not file_path.exists() or not file_path.is_file():
         return None
-
+    
     stat = file_path.stat()
     return {
         "name": file_path.name,
@@ -209,7 +213,7 @@ def get_file_info(file_path: Path) -> Dict[str, Any]:
         "size_mb": round(stat.st_size / 1024 / 1024, 2),
         "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
         "download_url": f"/files/{file_path.name}",
-        "content_id": file_path.stem,  # Content ID is the filename without extension
+        "content_id": file_path.stem
     }
 
 
@@ -217,11 +221,7 @@ def get_all_downloads() -> List[Dict[str, Any]]:
     """Get all downloaded files"""
     files = []
     if Config.DOWNLOADS_DIR.exists():
-        for f in sorted(
-            Config.DOWNLOADS_DIR.iterdir(),
-            key=lambda x: x.stat().st_mtime,
-            reverse=True,
-        ):
+        for f in sorted(Config.DOWNLOADS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
             if f.is_file():
                 info = get_file_info(f)
                 if info:
@@ -233,20 +233,10 @@ def get_all_downloads() -> List[Dict[str, Any]]:
 # API ROUTES
 # ============================================================================
 
-
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    """Home page with download form"""
-    files = get_all_downloads()
-    return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
-            "files": files,
-            "platforms": Config.SUPPORTED_PLATFORMS,
-            "current_time": datetime.now().isoformat(),
-        },
-    )
+async def home():
+    """Home page"""
+    return templates.TemplateResponse("index.html", {"request": {}})
 
 
 @app.get("/api/health")
@@ -256,31 +246,22 @@ async def health_check():
         "status": "healthy",
         "version": "1.0.0",
         "supported_platforms": Config.SUPPORTED_PLATFORMS,
-        "timestamp": datetime.now().isoformat(),
-    }
-
-
-@app.get("/api/platforms")
-async def get_platforms():
-    """Get supported platforms"""
-    return {
-        "platforms": Config.SUPPORTED_PLATFORMS,
-        "quality_options": downloader.get_quality_options(),
+        "timestamp": datetime.now().isoformat()
     }
 
 
 @app.get("/api/info")
-async def get_video_info(url: str = Query(..., description="Video URL")):
+async def get_video_info(url: str):
     """Get video information"""
     if not downloader.is_supported(url):
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported URL. Supported platforms: {Config.SUPPORTED_PLATFORMS}",
+            detail=f"Unsupported URL. Supported platforms: {Config.SUPPORTED_PLATFORMS}"
         )
-
+    
     platform = detect_platform(url)
     content_id = generate_content_id(platform.value)
-
+    
     try:
         info = downloader.get_video_info(url)
         return {
@@ -291,15 +272,13 @@ async def get_video_info(url: str = Query(..., description="Video URL")):
             "description": info.description,
             "thumbnail": info.thumbnail,
             "duration": info.duration,
-            "duration_formatted": f"{info.duration // 60}:{info.duration % 60:02d}"
-            if info.duration
-            else None,
+            "duration_formatted": f"{info.duration // 60}:{info.duration % 60:02d}" if info.duration else None,
             "uploader": info.uploader,
             "upload_date": info.upload_date,
             "view_count": info.view_count,
             "available_qualities": info.available_qualities,
             "is_live": info.is_live,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -307,41 +286,39 @@ async def get_video_info(url: str = Query(..., description="Video URL")):
 
 @app.post("/api/download")
 async def download_video(
-    url: str = Form(...), quality: str = Form("best"), format_name: str = Form("mp4")
+    url: str = Form(...),
+    quality: str = Form("best"),
+    format_name: str = Form("mp4")
 ):
     """Download a video with unique content ID as filename"""
     if not downloader.is_supported(url):
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported URL. Supported platforms: {Config.SUPPORTED_PLATFORMS}",
+            detail=f"Unsupported URL. Supported platforms: {Config.SUPPORTED_PLATFORMS}"
         )
-
+    
     platform = detect_platform(url)
     content_id = generate_content_id(platform.value)
-
+    
     try:
-        # Get video info first to get title for metadata
         info = downloader.get_video_info(url)
-        title = info.title or f"video_{content_id}"
-
-        # Create unique filename using content ID (NOT title)
+        
+        # Use content ID as filename
         unique_filename = f"{content_id}.%(ext)s"
         output_template = str(Config.DOWNLOADS_DIR / unique_filename)
-
-        # Download the video
+        
         result = downloader.download(
             url=url,
             quality=quality,
             format_name=format_name,
             output_path=str(Config.DOWNLOADS_DIR),
-            outtmpl=output_template,
+            outtmpl=output_template
         )
-
-        # Find the actual downloaded file
+        
         file_path = result.file_path
         file_size = result.file_size
         file_name = Path(file_path).name if file_path else None
-
+        
         return {
             "content_id": content_id,
             "user_link": url,
@@ -352,91 +329,25 @@ async def download_video(
             "file_path": file_path,
             "file_size_mb": round(file_size / 1024 / 1024, 2) if file_size else None,
             "file_url": f"/files/{file_name}" if file_name else None,
-            "global_url": f"http://{Config.HOST}:{Config.PORT}/files/{file_name}"
-            if file_name
-            else None,
+            "global_url": f"http://{Config.HOST}:{Config.PORT}/files/{file_name}" if file_name else None,
             "download_status": "completed" if result.success else "failed",
             "error": result.error,
             "message": result.message,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat()
         }
-
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/download/batch")
-async def batch_download(
-    urls: str = Form(..., description="Comma-separated URLs"),
-    quality: str = Form("best"),
-    format_name: str = Form("mp4"),
-):
-    """Download multiple videos with unique content IDs"""
-    url_list = [u.strip() for u in urls.split(",") if u.strip()]
-
-    if not url_list:
-        raise HTTPException(status_code=400, detail="No URLs provided")
-
-    results = []
-    for url in url_list:
-        if not downloader.is_supported(url):
-            results.append(
-                {"url": url, "status": "failed", "error": "Unsupported platform"}
-            )
-            continue
-
-        try:
-            platform = detect_platform(url)
-            content_id = generate_content_id(platform.value)
-
-            # Use content ID as filename (NOT title)
-            unique_filename = f"{content_id}.%(ext)s"
-            output_template = str(Config.DOWNLOADS_DIR / unique_filename)
-
-            result = downloader.download(
-                url=url,
-                quality=quality,
-                format_name=format_name,
-                output_path=str(Config.DOWNLOADS_DIR),
-                outtmpl=output_template,
-            )
-
-            results.append(
-                {
-                    "content_id": content_id,
-                    "url": url,
-                    "task_id": result.task_id,
-                    "video_title": result.title,
-                    "file_name": Path(result.file_path).name
-                    if result.file_path
-                    else None,
-                    "file_url": f"/files/{Path(result.file_path).name}"
-                    if result.file_path
-                    else None,
-                    "status": "completed" if result.success else "failed",
-                    "error": result.error,
-                }
-            )
-        except Exception as e:
-            results.append({"url": url, "status": "failed", "error": str(e)})
-
-    return {
-        "total": len(url_list),
-        "successful": sum(1 for r in results if r.get("status") == "completed"),
-        "failed": sum(1 for r in results if r.get("status") == "failed"),
-        "results": results,
-        "timestamp": datetime.now().isoformat(),
-    }
 
 
 @app.get("/api/download/progress/{task_id}")
 async def get_download_progress(task_id: str):
     """Get download progress"""
     progress = downloader.get_download_progress(task_id)
-
+    
     if progress is None:
         raise HTTPException(status_code=404, detail="Task not found")
-
+    
     return {
         "task_id": progress.task_id,
         "status": progress.status.value,
@@ -451,7 +362,7 @@ async def get_download_progress(task_id: str):
         "file_path": progress.file_path,
         "file_size": progress.file_size,
         "message": progress.message,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now().isoformat()
     }
 
 
@@ -462,8 +373,7 @@ async def list_files():
     return {
         "files": files,
         "total": len(files),
-        "downloads_dir": str(Config.DOWNLOADS_DIR),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now().isoformat()
     }
 
 
@@ -471,15 +381,17 @@ async def list_files():
 async def serve_file(filename: str):
     """Serve a file for download"""
     file_path = Config.DOWNLOADS_DIR / filename
-
+    
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
-
+    
     if not file_path.is_file():
         raise HTTPException(status_code=400, detail="Not a file")
-
+    
     return FileResponse(
-        path=str(file_path), filename=filename, media_type="application/octet-stream"
+        path=str(file_path),
+        filename=filename,
+        media_type="application/octet-stream"
     )
 
 
@@ -487,15 +399,15 @@ async def serve_file(filename: str):
 async def delete_file(filename: str):
     """Delete a downloaded file"""
     file_path = Config.DOWNLOADS_DIR / filename
-
+    
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
-
+    
     try:
         file_path.unlink()
         return {
             "message": f"File {filename} deleted",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -515,17 +427,15 @@ async def get_download_history():
                 "title": item.title,
                 "file_path": item.file_path,
                 "file_name": Path(item.file_path).name if item.file_path else None,
-                "file_size_mb": round(item.file_size / 1024 / 1024, 2)
-                if item.file_size
-                else None,
+                "file_size_mb": round(item.file_size / 1024 / 1024, 2) if item.file_size else None,
                 "success": item.success,
                 "error": item.error,
-                "timestamp": item.timestamp.isoformat(),
+                "timestamp": item.timestamp.isoformat()
             }
             for item in history
         ],
         "total_count": len(history),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now().isoformat()
     }
 
 
@@ -533,7 +443,10 @@ async def get_download_history():
 async def clear_history():
     """Clear download history"""
     downloader.clear_history()
-    return {"message": "History cleared", "timestamp": datetime.now().isoformat()}
+    return {
+        "message": "History cleared",
+        "timestamp": datetime.now().isoformat()
+    }
 
 
 @app.get("/api/qualities")
@@ -542,70 +455,22 @@ async def get_quality_options():
     return downloader.get_quality_options()
 
 
-# ============================================================================
-# WEB INTERFACE ROUTES
-# ============================================================================
-
-
-@app.get("/download", response_class=HTMLResponse)
-async def download_page(request: Request, url: str = None):
-    """Download page"""
-    return templates.TemplateResponse(
-        "download.html",
-        {
-            "request": request,
-            "url": url,
-            "platforms": Config.SUPPORTED_PLATFORMS,
-            "qualities": downloader.get_quality_options(),
-        },
-    )
-
-
-@app.get("/files", response_class=HTMLResponse)
-async def files_page(request: Request):
-    """Files listing page"""
-    files = get_all_downloads()
-    return templates.TemplateResponse(
-        "files.html", {"request": request, "files": files, "total": len(files)}
-    )
-
-
-@app.get("/api/docs", response_class=HTMLResponse)
-async def api_docs():
-    """API documentation"""
-    return HTMLResponse("""
-    <html>
-    <head><title>API Documentation</title></head>
-    <body style="font-family: Arial; padding: 20px;">
-        <h1>Social Media Downloader API</h1>
-        <h2>Endpoints:</h2>
-        <ul>
-            <li><b>GET /api/health</b> - Health check</li>
-            <li><b>GET /api/platforms</b> - List supported platforms</li>
-            <li><b>GET /api/info?url=...</b> - Get video info</li>
-            <li><b>POST /api/download</b> - Download video</li>
-            <li><b>POST /api/download/batch</b> - Batch download</li>
-            <li><b>GET /api/download/progress/{task_id}</b> - Get progress</li>
-            <li><b>GET /api/files</b> - List downloaded files</li>
-            <li><b>GET /api/files/{filename}</b> - Download file</li>
-            <li><b>GET /api/history</b> - Get download history</li>
-            <li><b>GET /api/qualities</b> - Get quality options</li>
-        </ul>
-        <h2>File Access:</h2>
-        <p>Downloaded files are accessible at: <code>http://localhost:8000/files/{filename}</code></p>
-    </body>
-    </html>
-    """)
+@app.get("/api/platforms")
+async def get_platforms():
+    """Get supported platforms"""
+    return {
+        "platforms": Config.SUPPORTED_PLATFORMS,
+        "quality_options": downloader.get_quality_options()
+    }
 
 
 # ============================================================================
 # MAIN
 # ============================================================================
 
-
 def main():
     """Main entry point"""
-    print("\n" + "=" * 70)
+    print("=" * 70)
     print("SOCIAL MEDIA DOWNLOADER - SERVER")
     print("=" * 70)
     print(f"Host: {Config.HOST}")
@@ -615,8 +480,13 @@ def main():
     print(f"Web UI: http://{Config.HOST}:{Config.PORT}/")
     print("=" * 70)
     print("\nPress Ctrl+C to stop the server\n")
-
-    uvicorn.run("app:app", host=Config.HOST, port=Config.PORT, reload=Config.DEBUG)
+    
+    uvicorn.run(
+        "app:app",
+        host=Config.HOST,
+        port=Config.PORT,
+        reload=Config.DEBUG
+    )
 
 
 if __name__ == "__main__":

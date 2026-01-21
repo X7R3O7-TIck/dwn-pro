@@ -1,31 +1,491 @@
 Metadata-Version: 2.4
 Name: social-media-downloader
 Version: 1.0.0
-Summary: Multi-platform video downloader for YouTube, Facebook, and Instagram
+Summary: Download videos from YouTube, Facebook, Instagram with unique content IDs
 Author: Social Media Downloader Team
-Author-email: dev@example.com
+Author-email: Social Media Downloader <dev@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/example/social-media-downloader
+Project-URL: Repository, https://github.com/example/social-media-downloader
+Project-URL: Issues, https://github.com/example/social-media-downloader/issues
+Keywords: video,downloader,youtube,facebook,instagram,api,fastapi
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Multimedia :: Video
 Requires-Python: >=3.8
-Requires-Dist: yt-dlp>=2024.1.1
-Requires-Dist: requests>=2.31.0
-Requires-Dist: python-dotenv>=1.0.0
-Requires-Dist: validators>=0.22.0
+Description-Content-Type: text/markdown
 Requires-Dist: fastapi>=0.109.0
 Requires-Dist: uvicorn>=0.27.0
+Requires-Dist: jinja2>=3.1.0
 Requires-Dist: python-multipart>=0.0.6
-Requires-Dist: click>=8.1.7
-Requires-Dist: colorama>=0.4.6
-Requires-Dist: tqdm>=4.66.1
+Requires-Dist: yt-dlp>=2024.1.1
+Requires-Dist: requests>=2.31.0
 Requires-Dist: pydantic>=2.5.0
-Requires-Dist: pydantic-settings>=2.1.0
-Requires-Dist: ffmpeg-python>=0.2.0
-Requires-Dist: python-dateutil>=2.8.2
+Requires-Dist: httpx>=0.26.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.23.0; extra == "dev"
-Requires-Dist: httpx>=0.26.0; extra == "dev"
+Requires-Dist: black>=23.12.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: mypy>=1.8.0; extra == "dev"
 Dynamic: author
-Dynamic: author-email
-Dynamic: provides-extra
-Dynamic: requires-dist
 Dynamic: requires-python
-Dynamic: summary
+
+# Social Media Downloader
+
+A powerful, full-featured social media video downloader API with web interface. Download videos from YouTube, Facebook, and Instagram with unique content IDs, full file info, and global access.
+
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)
+![License](https://img.shields.io/badge/license-MIT-yellow.svg)
+
+## Features
+
+- **Multi-Platform Support**: YouTube, Facebook, Instagram
+- **Unique Content IDs**: Files saved with unique IDs (not title-based)
+- **Full Response Info**: Complete file information in every response
+- **Global File Access**: Download files via URL from anywhere
+- **MP3 Extraction**: Extract audio from YouTube videos
+- **Batch Downloads**: Download multiple videos at once
+- **Progress Tracking**: Real-time download progress
+- **Download History**: Track all downloads with file info
+- **Web UI**: Beautiful interface for easy downloads
+
+## Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd social-media-downloader
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install the package
+pip install -e .
+```
+
+## Quick Start
+
+```bash
+# Start the server
+python app.py
+
+# Server runs at: http://localhost:8000
+# API Docs: http://localhost:8000/docs
+# Web UI: http://localhost:8000/
+```
+
+## API Usage Examples
+
+### 1. Download a Video
+
+```bash
+curl -X POST http://localhost:8000/api/download \
+  -d "url=https://www.youtube.com/watch?v=9bZkp7q19f0" \
+  -d "quality=720p" \
+  -d "format=mp4"
+```
+
+**Response:**
+```json
+{
+    "content_id": "youtube_1768981902_9361",
+    "user_link": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    "platform": "youtube",
+    "video_title": "PSY - GANGNAM STYLE M/V",
+    "file_name": "youtube_1768981902_9361.webm",
+    "file_path": "/path/to/downloads/youtube_1768981902_9361.webm",
+    "file_size_mb": 32.24,
+    "file_url": "/files/youtube_1768981902_9361.webm",
+    "global_url": "http://localhost:8000/files/youtube_1768981902_9361.webm",
+    "download_status": "completed",
+    "timestamp": "2026-01-21T13:47:10.000000"
+}
+```
+
+### 2. Download MP3 (YouTube Only)
+
+```bash
+curl -X POST http://localhost:8000/api/download \
+  -d "url=https://www.youtube.com/watch?v=9bZkp7q19f0" \
+  -d "quality=audio" \
+  -d "format=m4a"
+```
+
+**Response:**
+```json
+{
+    "content_id": "youtube_1768981902_9361",
+    "user_link": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    "platform": "youtube",
+    "file_name": "youtube_1768981902_9361.mp3",
+    "file_size_mb": 5.77,
+    "global_url": "http://localhost:8000/files/youtube_1768981902_9361.mp3",
+    "download_status": "completed"
+}
+```
+
+### 3. Get Video Information
+
+```bash
+curl "http://localhost:8000/api/info?url=https://www.youtube.com/watch?v=9bZkp7q19f0"
+```
+
+**Response:**
+```json
+{
+    "content_id": "youtube_1768981533_9743",
+    "user_link": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    "platform": "youtube",
+    "title": "PSY - GANGNAM STYLE M/V",
+    "duration": 252,
+    "duration_formatted": "4:12",
+    "uploader": "officialpsy",
+    "view_count": 5823929141,
+    "available_qualities": ["best", "4k", "1080p", "720p", "480p", "360p", "audio", "audio_mp3"],
+    "timestamp": "2026-01-21T13:45:36.000000"
+}
+```
+
+### 4. Batch Download
+
+```bash
+curl -X POST http://localhost:8000/api/download/batch \
+  -d "urls=https://youtube.com/watch?v=xxx1,https://youtube.com/watch?v=xxx2" \
+  -d "quality=720p" \
+  -d "format=mp4"
+```
+
+**Response:**
+```json
+{
+    "total": 2,
+    "successful": 2,
+    "failed": 0,
+    "results": [
+        {
+            "content_id": "youtube_1768981760_9163",
+            "url": "https://youtube.com/watch?v=xxx1",
+            "file_name": "youtube_1768981760_9163.webm",
+            "file_url": "/files/youtube_1768981760_9163.webm",
+            "status": "completed"
+        },
+        {
+            "content_id": "youtube_1768981778_7739",
+            "url": "https://youtube.com/watch?v=xxx2",
+            "file_name": "youtube_1768981778_7739.webm",
+            "file_url": "/files/youtube_1768981778_7739.webm",
+            "status": "completed"
+        }
+    ]
+}
+```
+
+### 5. Check Download Progress
+
+```bash
+curl http://localhost:8000/api/download/progress/{task_id}
+```
+
+**Response:**
+```json
+{
+    "task_id": "b1a997b8",
+    "status": "completed",
+    "progress_percent": 100.0,
+    "downloaded_bytes": 33810689,
+    "total_bytes": 33810689,
+    "speed": "3.8 MB/s",
+    "file_path": "/path/to/downloads/youtube_1768981871_8385.webm",
+    "file_size": 33810689
+}
+```
+
+### 6. List All Downloaded Files
+
+```bash
+curl http://localhost:8000/api/files
+```
+
+**Response:**
+```json
+{
+    "files": [
+        {
+            "name": "youtube_1768981902_9361.mp3",
+            "content_id": "youtube_1768981902_9361",
+            "size_mb": 5.77,
+            "download_url": "/files/youtube_1768981902_9361.mp3"
+        }
+    ],
+    "total": 1
+}
+```
+
+### 7. Download File Directly
+
+```bash
+# Get file
+curl -O http://localhost:8000/files/youtube_1768981902_9361.mp3
+
+# Or with wget
+wget http://localhost:8000/files/youtube_1768981902_9361.mp3
+```
+
+### 8. Get Download History
+
+```bash
+curl http://localhost:8000/api/history
+```
+
+**Response:**
+```json
+{
+    "items": [
+        {
+            "content_id": "history_b1a997b8",
+            "task_id": "b1a997b8",
+            "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+            "platform": "youtube",
+            "title": "PSY - GANGNAM STYLE M/V",
+            "file_name": "youtube_1768981871_8385.webm",
+            "file_size_mb": 32.24,
+            "success": true
+        }
+    ],
+    "total_count": 1
+}
+```
+
+### 9. Health Check
+
+```bash
+curl http://localhost:8000/api/health
+```
+
+**Response:**
+```json
+{
+    "status": "healthy",
+    "version": "1.0.0",
+    "supported_platforms": ["youtube", "facebook", "instagram"],
+    "timestamp": "2026-01-21T13:45:36.000000"
+}
+```
+
+### 10. Get Quality Options
+
+```bash
+curl http://localhost:8000/api/qualities
+```
+
+**Response:**
+```json
+[
+    {"name": "best", "description": "Best available quality (video + audio)"},
+    {"name": "4k", "description": "Maximum 4K (2160p)"},
+    {"name": "1080p", "description": "Full HD (1080p)"},
+    {"name": "720p", "description": "HD (720p)"},
+    {"name": "480p", "description": "SD (480p)"},
+    {"name": "360p", "description": "Low quality (360p)"},
+    {"name": "audio", "description": "Best audio quality only"},
+    {"name": "audio_mp3", "description": "Extract audio as MP3"}
+]
+```
+
+## Supported Platforms & Formats
+
+| Platform | Video Formats | Audio Extraction |
+|----------|--------------|------------------|
+| YouTube | MP4, WebM, MKV | MP3, M4A, AAC, FLAC |
+| Facebook | MP4, WebM | No |
+| Instagram | MP4, WebM | No |
+
+## Quality Options
+
+| Quality | Max Resolution | Use Case |
+|---------|---------------|----------|
+| `4k` | 2160p (4K) | Ultra HD |
+| `1080p` | 1080p (Full HD) | HD Video |
+| `720p` | 720p (HD) | Standard HD |
+| `480p` | 480p (SD) | Mobile/Backup |
+| `360p` | 360p (Low) | Low bandwidth |
+| `best` | Auto | Best available |
+| `audio` | Audio only | Music extraction |
+| `audio_mp3` | MP3 | MP3 extraction |
+
+## File Naming
+
+Files are saved with **unique content IDs** instead of titles:
+
+```
+# Before (Title-based - not used)
+PSY - GANGNAM STYLE M⧸V.webm
+
+# After (Content ID-based - CURRENT)
+youtube_1768981902_9361.webm
+youtube_1768981902_9361.mp3
+```
+
+**Content ID Format:** `{platform}_{timestamp}_{hash}`
+
+Example: `youtube_1768981902_9361`
+
+## Project Structure
+
+```
+social-media-downloader/
+├── app.py                 # Main server application
+├── README.md              # This file
+├── requirements.txt       # Python dependencies
+├── setup.py               # Package setup
+├── downloads/             # Downloaded files
+├── templates/             # HTML templates
+│   └── index.html        # Web UI
+├── src/                   # Source code
+│   ├── api/              # FastAPI app & routes
+│   ├── cli/              # CLI commands
+│   ├── core/             # Core downloader logic
+│   ├── platforms/        # Platform handlers
+│   └── utils/            # Utilities
+└── tests/                # Test files
+```
+
+## Using with Python
+
+```python
+import requests
+
+BASE_URL = "http://localhost:8000"
+
+# Download a video
+def download_video(url, quality="720p", format_name="mp4"):
+    response = requests.post(
+        f"{BASE_URL}/api/download",
+        data={
+            "url": url,
+            "quality": quality,
+            "format": format_name
+        }
+    )
+    return response.json()
+
+# Get video info
+def get_video_info(url):
+    response = requests.get(f"{BASE_URL}/api/info", params={"url": url})
+    return response.json()
+
+# List all files
+def list_files():
+    response = requests.get(f"{BASE_URL}/api/files")
+    return response.json()
+
+# Download a file
+def download_file(filename, save_path="."):
+    response = requests.get(f"{BASE_URL}/files/{filename}")
+    with open(f"{save_path}/{filename}", "wb") as f:
+        f.write(response.content)
+    return True
+
+# Usage
+result = download_video("https://www.youtube.com/watch?v=9bZkp7q19f0")
+print(f"Downloaded: {result['file_name']}")
+print(f"Size: {result['file_size_mb']} MB")
+print(f"URL: {result['global_url']}")
+```
+
+## Using with JavaScript
+
+```javascript
+const BASE_URL = 'http://localhost:8000';
+
+// Download video
+async function downloadVideo(url, quality = '720p') {
+    const formData = new URLSearchParams();
+    formData.append('url', url);
+    formData.append('quality', quality);
+    formData.append('format', 'mp4');
+    
+    const response = await fetch(`${BASE_URL}/api/download`, {
+        method: 'POST',
+        body: formData
+    });
+    return await response.json();
+}
+
+// Get video info
+async function getVideoInfo(url) {
+    const response = await fetch(`${BASE_URL}/api/info?url=${encodeURIComponent(url)}`);
+    return await response.json();
+}
+
+// List files
+async function listFiles() {
+    const response = await fetch(`${BASE_URL}/api/files`);
+    return await response.json();
+}
+
+// Download file
+async function downloadFile(filename, saveName) {
+    const response = await fetch(`${BASE_URL}/files/${filename}`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = saveName;
+    a.click();
+}
+
+// Usage
+const result = await downloadVideo('https://www.youtube.com/watch?v=9bZkp7q19f0');
+console.log(`Downloaded: ${result.file_name} (${result.file_size_mb} MB)`);
+```
+
+## Web UI
+
+Access the web interface at: **http://localhost:8000/**
+
+Features:
+- Download videos with one click
+- Select quality and format
+- View download progress
+- Browse and download saved files
+- View download history
+
+## Environment Variables
+
+```bash
+# Server settings
+export SMD_HOST=0.0.0.0
+export SMD_PORT=8000
+
+# Download settings
+export SMD_DEFAULT_QUALITY=best
+export SMD_DEFAULT_FORMAT=mp4
+export SMD_OUTPUT_DIR=./downloads
+```
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## Support
+
+For issues and questions, please open a GitHub issue.

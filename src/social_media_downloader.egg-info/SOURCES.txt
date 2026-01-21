@@ -1,3 +1,5 @@
+README.md
+pyproject.toml
 setup.py
 src/api/__init__.py
 src/api/app.py
@@ -24,3 +26,4 @@ src/social_media_downloader.egg-info/top_level.txt
 src/utils/__init__.py
 src/utils/formatters.py
 src/utils/validators.py
+tests/test_downloader.py
