@@ -4,10 +4,10 @@ Social Media Downloader - Complete Server Application
 
 Features:
 - Full API access for YouTube, Facebook, Instagram downloads
-- Title-based filename saving (not just random names)
-- Unique content ID generation
+- Unique content ID generation (NOT title-based)
 - Global file serving via URL
-- Web interface for downloads
+- Beautiful Web UI for downloads
+- Auto-install dependencies on first run
 """
 
 import sys
@@ -15,6 +15,7 @@ import os
 import json
 import time
 import uuid
+import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, List
@@ -23,6 +24,97 @@ import threading
 # Add project to path
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
+
+
+# ============================================================================
+# DEPENDENCY CHECK & INSTALL
+# ============================================================================
+
+REQUIRED_PACKAGES = [
+    ("fastapi", "fastapi"),
+    ("uvicorn", "uvicorn"),
+    ("jinja2", "jinja2"),
+    ("python-multipart", "python-multipart"),
+    ("yt-dlp", "yt-dlp"),
+    ("requests", "requests"),
+    ("pydantic", "pydantic"),
+    ("httpx", "httpx"),
+]
+
+
+def check_and_install_dependencies():
+    """Check and install required dependencies"""
+    print("=" * 70)
+    print("SOCIAL MEDIA DOWNLOADER - DEPENDENCY CHECK")
+    print("=" * 70)
+
+    missing_packages = []
+    installed_packages = []
+
+    for package_name, import_name in REQUIRED_PACKAGES:
+        try:
+            __import__(import_name)
+            version = getattr(sys.modules[import_name], "__version__", "unknown")
+            installed_packages.append(f"  ✓ {package_name} ({version})")
+        except ImportError:
+            missing_packages.append(package_name)
+            print(f"  ✗ {package_name} - NOT FOUND")
+
+    if installed_packages:
+        print("\nInstalled Packages:")
+        for pkg in installed_packages:
+            print(pkg)
+
+    if missing_packages:
+        print(f"\nMissing Packages: {', '.join(missing_packages)}")
+        print("\nInstalling missing packages...")
+
+        try:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "--upgrade", "pip"]
+            )
+
+            for package in missing_packages:
+                print(f"  Installing {package}...")
+                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+            print("\n✓ All dependencies installed successfully!")
+
+        except subprocess.CalledProcessError as e:
+            print(f"\n✗ Failed to install dependencies: {e}")
+            print("Please install manually: pip install -r requirements.txt")
+            return False
+
+    print("\n✓ All dependencies are satisfied!")
+    return True
+
+
+def check_ffmpeg():
+    """Check if FFmpeg is installed"""
+    try:
+        result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
+        if result.returncode == 0:
+            version = result.stdout.split("\n")[0]
+            print(f"  ✓ FFmpeg: {version.split()[2]}")
+            return True
+    except (FileNotFoundError, subprocess.SubprocessError):
+        pass
+
+    print("  ⚠ FFmpeg - NOT FOUND (audio extraction may not work)")
+    print("    Install with: apt install ffmpeg  (Ubuntu/Debian)")
+    print("    Or: brew install ffmpeg  (macOS)")
+    return False
+
+
+# Run dependency check before importing other modules
+if not check_and_install_dependencies():
+    sys.exit(1)
+
+check_ffmpeg()
+
+print("\n" + "=" * 70)
+print("Starting Social Media Downloader...")
+print("=" * 70 + "\n")
 
 from fastapi import FastAPI, HTTPException, Request, Form, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
