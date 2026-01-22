@@ -148,7 +148,7 @@ from src.core.url_detector import detect_platform
 class Config:
     """Server configuration"""
     HOST = "0.0.0.0"
-    PORT = 8000
+    PORT = 5000
     DEBUG = False
     DOWNLOADS_DIR = PROJECT_ROOT / "downloads"
     MAX_CONCURRENT_DOWNLOADS = 3
@@ -176,7 +176,8 @@ app.add_middleware(
 )
 
 # Ensure downloads directory exists
-Config.DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+if not os.environ.get("VERCEL"):
+    Config.DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Mount static files for serving downloads
 app.mount("/files", StaticFiles(directory=str(Config.DOWNLOADS_DIR)), name="files")
@@ -467,6 +468,8 @@ async def get_platforms():
 # ============================================================================
 # MAIN
 # ============================================================================
+
+app = app # Export for Vercel
 
 def main():
     """Main entry point"""
